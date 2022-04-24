@@ -1,12 +1,13 @@
 ﻿using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
-using Notification.Consumer.Models;
-using Notification.Consumer.Utils.Helper;
-using Notification.Consumer.Utils.Settings;
+using Notification.Messenger.Models;
+using Notification.Commom.Helper;
+using Notification.Commom.Settings;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using System.Threading;
 using System.Threading.Tasks;
+using Notification.Messenger.Interfaces;
 
 namespace Notification.Consumer
 {
@@ -15,10 +16,12 @@ namespace Notification.Consumer
         private readonly RabbitMqConfig _config;
         private readonly IConnection _connection;
         private readonly IModel _channel;
+        private readonly IMessengerService<Email> _messengerService;
 
-        public Consumer(IOptions<RabbitMqConfig> options)
+        public Consumer(IOptions<RabbitMqConfig> options, IMessengerService<Email> messengerService)
         {
             _config = options.Value;
+            _messengerService = messengerService;
             
             var factory = new ConnectionFactory
             {
@@ -40,13 +43,14 @@ namespace Notification.Consumer
         {
             var consumer = new EventingBasicConsumer(_channel);
 
-            consumer.Received += (sender, eventArgs) =>
+            consumer.Received += async (sender, eventArgs) =>
             {
                 var body = eventArgs.Body.ToArray();
-                Email email = ByteHelper.ByteArrayToObject<Email>(body);
-                System.Console.WriteLine(email.Subject);
+                var email = ByteHelper.ByteArrayToObject<Email>(body);
+                var delivered = await _messengerService.Deliver(email);
 
-                _channel.BasicAck(eventArgs.DeliveryTag, false);
+                if(delivered)
+                    _channel.BasicAck(eventArgs.DeliveryTag, false);
             };
 
             _channel.BasicConsume(_config.Queue, false, consumer);

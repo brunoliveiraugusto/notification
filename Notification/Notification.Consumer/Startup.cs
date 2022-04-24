@@ -3,7 +3,10 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Notification.Consumer.Utils.Settings;
+using Notification.Commom.Settings;
+using Notification.Messenger.Interfaces;
+using Notification.Messenger.Models;
+using Notification.Messenger.Services;
 
 namespace Notification.Consumer
 {
@@ -19,7 +22,10 @@ namespace Notification.Consumer
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddHostedService<Consumer>();
+            services.AddTransient<IMessengerService<Email>, SendGridService>();
+
             services.Configure<RabbitMqConfig>(Configuration.GetSection(nameof(RabbitMqConfig)));
+            services.Configure<SendGridConfig>(Configuration.GetSection(nameof(SendGridConfig)));
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

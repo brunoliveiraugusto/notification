@@ -1,7 +1,7 @@
 ﻿using System.IO;
 using System.Text.Json;
 
-namespace Notification.Consumer.Utils.Helper
+namespace Notification.Commom.Helper
 {
     public static class ByteHelper
     {

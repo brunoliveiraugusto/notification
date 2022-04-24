@@ -1,4 +1,4 @@
-﻿namespace Notification.Consumer.Utils.Settings
+﻿namespace Notification.Commom.Settings
 {
     public class RabbitMqConfig
     {

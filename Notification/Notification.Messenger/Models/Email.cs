@@ -1,4 +1,4 @@
-﻿namespace Notification.Consumer.Models
+﻿namespace Notification.Messenger.Models
 {
     public class Email
     {
